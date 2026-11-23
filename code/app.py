@@ -5,6 +5,7 @@ import json
 import logging
 import math
 import os
+import re
 from datetime import date
 from pathlib import Path
 import traceback
@@ -211,6 +212,10 @@ with controls:
                           for frame in traceback.extract_tb(error.__traceback__)]
                 logging.error("Live processing failure during %s (%s), frames=%s",
                               stage, type(error).__name__, frames)
+                if type(error).__name__ == "EEException":
+                    reason = re.sub(r"https?://\S+", "[request URL omitted]", str(error))
+                    reason = re.sub(r"eyJ[A-Za-z0-9_.-]{40,}", "[token omitted]", reason)
+                    logging.error("Earth Engine API reason: %s", reason[:800])
                 st.error(f"Live processing could not finish during {stage} ({type(error).__name__}). "
                          "Your previously displayed result is still available.")
 
