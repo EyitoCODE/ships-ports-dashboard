@@ -74,7 +74,7 @@ def apply_chat_actions(actions):
             confirmations.append("Opened the saved " + action["location"] + " example.")
         if action["name"] == "filter_ports":
             st.session_state.province = action["province"]
-            st.session_state.port_query = action["name"]
+            st.session_state.port_query = action["query"]
             confirmations.append("Updated the port reference filters.")
     return confirmations
 

@@ -21,8 +21,8 @@ TOOLS = [
         "parameters": {"type": "object", "properties": {
             "province": {"type": "string", "enum": [
                 "All", "AB", "BC", "MB", "NB", "NL", "NS", "NT", "NU", "ON", "PE", "QC", "SK", "YT"]},
-            "name": {"type": "string", "maxLength": 100}},
-            "required": ["province", "name"], "additionalProperties": False}}}
+            "query": {"type": "string", "maxLength": 100}},
+            "required": ["province", "query"], "additionalProperties": False}}}
 ]
 
 INSTRUCTIONS = """You are the Ships and Ports project assistant.
@@ -57,8 +57,8 @@ def validate_action(call):
         return {"name": "show_example", **arguments}
     provinces = TOOLS[1]["function"]["parameters"]["properties"]["province"]["enum"]
     if (function["name"] == "filter_ports" and isinstance(arguments, dict)
-            and set(arguments) == {"province", "name"} and arguments["province"] in provinces
-            and isinstance(arguments["name"], str) and len(arguments["name"]) <= 100):
+            and set(arguments) == {"province", "query"} and arguments["province"] in provinces
+            and isinstance(arguments["query"], str) and len(arguments["query"]) <= 100):
         return {"name": "filter_ports", **arguments}
     raise ChatUnavailable("That map action is unavailable. Try asking for Halifax, Vancouver, or a province.")
 
