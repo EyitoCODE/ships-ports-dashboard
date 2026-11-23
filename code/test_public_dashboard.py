@@ -44,7 +44,7 @@ class SharedDashboardChecks(unittest.TestCase):
         call = {"function": {"name": "show_example", "arguments": '{"location":"Vancouver"}'}}
         self.assertEqual(validate_action(call)["location"], "Vancouver")
         reference_filter = {"function": {"name": "filter_ports",
-                            "arguments": '{"province":"YT","query":""}'}}
+                            "arguments": '{"province":"Yukon","query":""}'}}
         action = validate_action(reference_filter)
         self.assertEqual(action, {"name": "filter_ports", "province": "YT", "query": ""})
         call["function"] = {"name": "run_code", "arguments": '{"code":"anything"}'}
@@ -91,7 +91,7 @@ class SharedDashboardChecks(unittest.TestCase):
             app.run(timeout=45)
             self.assertFalse(app.exception)
             self.assertEqual(app.session_state["province"], "YT")
-            self.assertIn("Updated the port reference filters.", app.session_state["messages"][-1]["content"])
+            self.assertIn("Port reference filter set to Yukon.", app.session_state["messages"][-1]["content"])
             other = AppTest.from_file(str(PROJECT / "code/app.py")).run(timeout=45)
             self.assertFalse(other.exception)
             self.assertEqual(other.metric[0].value, "6")

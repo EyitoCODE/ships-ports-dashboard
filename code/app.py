@@ -13,7 +13,7 @@ import streamlit as st
 from streamlit_folium import st_folium
 
 from national_data import read_map_references, filter_ports
-from project_chat import ask_assistant, ChatUnavailable
+from project_chat import ask_assistant, ChatUnavailable, PROVINCES
 from public_backend import (
     EXAMPLES, PRESETS, drawing_bounds, load_example, load_model, map_overlay,
     result_context, run_live, validate_selection)
@@ -75,7 +75,8 @@ def apply_chat_actions(actions):
         if action["name"] == "filter_ports":
             st.session_state.province = action["province"]
             st.session_state.port_query = action["query"]
-            confirmations.append("Updated the port reference filters.")
+            name = next(name for name, code in PROVINCES.items() if code == action["province"])
+            confirmations.append("Port reference filter set to " + name + ".")
     return confirmations
 
 
@@ -120,7 +121,8 @@ with controls:
 
     with ports_tab:
         st.selectbox("Province or territory", ["All"] + sorted({row["province"] for row in records}),
-                     key="province")
+                     key="province", format_func=lambda code: next(
+                         name for name, value in PROVINCES.items() if value == code))
         st.selectbox("Facility type", ["All"] + sorted({row["subtype"] for row in records}), key="facility")
         st.text_input("Port or marina name", key="port_query", max_chars=100)
         rows = filter_ports(records, st.session_state.province, st.session_state.facility,

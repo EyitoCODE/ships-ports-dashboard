@@ -8,6 +8,13 @@ class ChatUnavailable(RuntimeError):
     """A visitor-readable failure without provider credentials or request details."""
 
 
+PROVINCES = {
+    "All": "All", "Alberta": "AB", "British Columbia": "BC", "Manitoba": "MB",
+    "New Brunswick": "NB", "Newfoundland and Labrador": "NL", "Nova Scotia": "NS",
+    "Northwest Territories": "NT", "Nunavut": "NU", "Ontario": "ON",
+    "Prince Edward Island": "PE", "Quebec": "QC", "Saskatchewan": "SK", "Yukon": "YT",
+}
+
 TOOLS = [
     {"type": "function", "function": {
         "name": "show_example",
@@ -19,8 +26,8 @@ TOOLS = [
         "name": "filter_ports",
         "description": "Filter the published Canadian port and marina reference layer.",
         "parameters": {"type": "object", "properties": {
-            "province": {"type": "string", "enum": [
-                "All", "AB", "BC", "MB", "NB", "NL", "NS", "NT", "NU", "ON", "PE", "QC", "SK", "YT"]},
+            "province": {"type": "string", "enum": list(PROVINCES),
+                         "description": "Use the full Canadian province or territory name."},
             "query": {"type": "string", "maxLength": 100}},
             "required": ["province", "query"], "additionalProperties": False}}}
 ]
@@ -55,11 +62,11 @@ def validate_action(call):
     if function["name"] == "show_example" and arguments in [
             {"location": "Halifax"}, {"location": "Vancouver"}]:
         return {"name": "show_example", **arguments}
-    provinces = TOOLS[1]["function"]["parameters"]["properties"]["province"]["enum"]
     if (function["name"] == "filter_ports" and isinstance(arguments, dict)
-            and set(arguments) == {"province", "query"} and arguments["province"] in provinces
+            and set(arguments) == {"province", "query"} and arguments["province"] in PROVINCES
             and isinstance(arguments["query"], str) and len(arguments["query"]) <= 100):
-        return {"name": "filter_ports", **arguments}
+        return {"name": "filter_ports", "province": PROVINCES[arguments["province"]],
+                "query": arguments["query"]}
     raise ChatUnavailable("That map action is unavailable. Try asking for Halifax, Vancouver, or a province.")
 
 
