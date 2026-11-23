@@ -2,10 +2,12 @@
 import base64
 import html
 import json
+import logging
 import math
 import os
 from datetime import date
 from pathlib import Path
+import traceback
 
 import folium
 from folium.plugins import Draw, MarkerCluster
@@ -186,12 +188,15 @@ with controls:
         if not live_enabled:
             st.info("Saved examples are ready. Live analysis will become available after the host connects Earth Engine.")
         if submitted:
+            stage = "area validation"
             try:
                 bounds = validate_selection([west, south, east, north])
                 if start >= end:
                     raise ValueError("Choose an end date after the start date.")
                 with st.spinner("Selecting a clear satellite scene and detecting ships…"):
+                    stage = "loading the detector"
                     model, device = detector()
+                    stage = "satellite retrieval and inference"
                     result = run_live(PROJECT, model, device, bounds, start.isoformat(), end.isoformat(),
                                       confidence, clouds, ee_project, ee_secret)
                 st.session_state.result = result
@@ -201,8 +206,12 @@ with controls:
                 st.rerun()
             except ValueError as error:
                 st.error(str(error))
-            except Exception:
-                st.error("Live processing could not finish. Try a smaller area or different dates. "
+            except Exception as error:
+                frames = [(frame.filename, frame.lineno, frame.name)
+                          for frame in traceback.extract_tb(error.__traceback__)]
+                logging.error("Live processing failure during %s (%s), frames=%s",
+                              stage, type(error).__name__, frames)
+                st.error(f"Live processing could not finish during {stage} ({type(error).__name__}). "
                          "Your previously displayed result is still available.")
 
     with assistant_tab:
